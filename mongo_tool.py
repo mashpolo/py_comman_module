@@ -63,14 +63,24 @@ class MongoConn(object):
                 try:
                     return self.coll.insert_many(info, session=session)
                 except Exception as e:
-                    raise Exception("Can not write into database, already rollback!")
+                    raise ValueError(e)
             elif isinstance(info, dict):
                 try:
                     self.coll.insert_one(info, session=session)
                 except Exception as e:
-                    raise Exception("Can not write into database, already rollback!")
+                    raise ValueError(e)
             else:
                 raise Exception("It doesn't support this type of info")
+
+    def mput(self, coll_name, old, new):
+        with self.client.start_session(causal_consistency=True) as session:
+            self.coll = self.get_coll(coll_name)
+            try:
+                return self.coll.update_many(old, {"$set": new,
+                                                   "$currentDate": {"lastModified": True}},
+                                             session=session)
+            except Exception as e:
+                return e
 
     def get_coll(self, coll_name=None):
         if coll_name is not None:
