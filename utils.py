@@ -4,6 +4,7 @@
 import socket
 import smtplib
 import multiprocessing
+import logger
 
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
